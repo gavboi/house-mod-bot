@@ -14,7 +14,28 @@
 
 # https://pypi.org/project/PyDictionary/     (for translating or whawtevs)
 
-import discord, asyncio, time, random
+import asyncio, time, random, os, sys
+
+try:
+    import discord
+    print("discord.py found")
+except:
+    stream = os.popen('py -3 -m pip install -U discord.py')
+    output = stream.read()
+    print("windows command attempted for acquiring discord.py\n" + output)
+    try:
+        import discord
+        print("discord.py found")
+    except:
+        stream = os.popen('python3 -m pip install -U discord.py')
+        output = stream.read()
+        print("linux command attempted for acquiring discord.py\n" + output)
+        try:
+            import discord
+            print("discord.py found")
+        except:
+            print("discord.py could not be found or acquired")
+            sys.exit()
 
 timer_exists = False
 
