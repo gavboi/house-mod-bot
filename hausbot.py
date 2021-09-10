@@ -14,19 +14,19 @@
 
 # https://pypi.org/project/PyDictionary/     (for translating or whawtevs)
 
-import discord, asyncio, time
+import discord, asyncio, time, random
 
 timer_exists = False
 
 client = discord.Client()
 prefix = "&"
-names = ["Gavin", "Josh", "Rachel", "Simone", "Brianna", "Cameron", "Connor"]
+ball = ["Yes", "No", "Definitely", "Definitely NOT", "Probably", "Probably Not", "Maybe", "Doesn't Matter"]
+names = ["Gavin", "Josh", "Rachel", "Simone", "Brianna", "Luke", "Connor"]
 chore_list = ["Basement Bathroom", "Main Bathroom", "Upper Bathroom", "Sweep/Mop Kitchen", "Sweep/Mop Hallway/Stairs", "Kitchen Counter/Tables/Applicances", "Kitchen Sink/Dishes/Dishrack"]
 help_msg = "".join((("`" + prefix + "help {<command>}` - show this message or information about a specific command\n"),
-                    ("`" + prefix + "acronym <letters>` - try to make an acronym out of <letters> **NOT IMPLEMENTED**\n"),
-                    ("`" + prefix + "anagram <letters>` - try to make an anagram out of <letters> **NOT IMPLEMENTED**\n"),
-                    ("`" + prefix + "chores [r | <name>]` - list and assign chores starting with a random or specific person **NOT IMPLEMENTED**\n"),
-                    ("`" + prefix + "timer <day>:<hr>:<min> {e} {<message>}` - start timer, optional ping all, optional end message (limit one timer) **NOT IMPLEMENTED**")))
+                    ("`" + prefix + "8ball {<message>}` - receive an answer to a decision\n"),
+                    ("`" + prefix + "roll <amount>d<sides>` - roll <amount> of <sides>-sided dice\n"),
+                    ("`" + prefix + "timer <day>:<hr>:<min> {e} {<message>}` - start timer, optional ping all, optional end message (limit one timer)")))
 
 async def timer_function(message, tim, e, msg):
     global timer_exists
@@ -69,24 +69,23 @@ async def on_message(message):
     args = message.content.split()
     arg_len = len(args)
     if (message.content[:len(prefix)] == prefix):
-        if (message.content.startswith(prefix + "EXIT")):
+        if (message.content.startswith(prefix + "EXIT")):                                                   # IN-DISCORD SHUTOFF
             print("\n----- Bot shutoff called from discord -----\n")
             await client.logout()
             return
-        if (message.content.startswith(prefix + "TOADD")):
-            await message.channel.send("snow??, anagram, acronym, translator, timer, tasks thingy, more prefixes, nicknames, specific help, simone timeout")
+        if (message.content.startswith(prefix + "IDEAS")):                                                  # MESSAGE THE IDEA LIST
+            await message.channel.send("snow??, anagram, acronym, translator, more prefixes, nicknames, specific help, dice")
             return
-        if (message.content.startswith(prefix + "help")):
+        if (message.content.startswith(prefix + "help")):                                                   # SHOW HELP MESSAGE
             await message.channel.send(help_msg)
             return
-        if (message.content.startswith(prefix + "anagram")):
-            arg = message.content.split()
+        if (message.content.startswith(prefix + "anagram")):                                                # ANAGRAM FINDER? NOT CREATED
             if (arg_len < 2):
                 await message.channel.send("Usage: `" + prefix + "anagram <letters>`")
             else:
                 await message.channel.send(args[1])
             return
-        if (message.content.startswith(prefix + "timer")):
+        if (message.content.startswith(prefix + "timer")):                                                  # TIMER AND REMINDER
             if (arg_len < 2):
                 await message.channel.send("Usage: `" + prefix + "timer <day>:<hr>:<min> {e} {<message>}`")
             elif (arg_len >= 2):
@@ -112,6 +111,26 @@ async def on_message(message):
                     asyncio.run(await timer_function(message, tim, e, msg))
                 except:
                     print("timer exception")
+            return
+        if (message.content.startswith(prefix + "8ball")):                                                  # MAGIC 8 BALL
+            await message.channel.send("The Magic 8-Ball says... " + ball[random.randint(0, 7)])
+            return
+        if (message.content.startswith(prefix + "dice") or message.content.startswith(prefix + "roll")):    # DICE ROLL
+            if (arg_len < 2):
+                await message.channel.send("Usage: `" + prefix + "roll <amount>d<sides>`")
+            elif (arg_len >= 2):
+                try:
+                    nums = args[1].split("d")
+                    nums[0], nums[1] = int(nums[0]), int(nums[1])
+                    rolls = []
+                    msg = "Your rolls: "
+                    for i in range(nums[0]):
+                        rolls.append(random.randint(1, nums[1]))
+                        msg += "`" + str(rolls[-1]) + "` "
+                    msg += " | Sum: `" + str(sum(rolls)) + "`"
+                    await message.channel.send(msg)
+                except:
+                    await message.channel.send("Usage: `" + prefix + "roll <amount>d<sides>`")                
             return
         await message.channel.send("Unknown command. Type `" + prefix + "help` for command list.")
 
