@@ -106,6 +106,7 @@ async def search_word(word):
 async def on_ready():
     print("we have logged in as {0.user}".format(client))
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="over the house"))
+    return
 
 @client.event
 async def on_message(message):
