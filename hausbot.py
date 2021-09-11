@@ -44,10 +44,14 @@ prefix = "&"
 ball = ["Yes", "No", "Definitely", "Definitely NOT", "Probably", "Probably Not", "Maybe", "Doesn't Matter"]
 names = ["Gavin", "Josh", "Rachel", "Simone", "Brianna", "Luke", "Connor"]
 chore_list = ["Basement Bathroom", "Main Bathroom", "Upper Bathroom", "Sweep/Mop Kitchen", "Sweep/Mop Hallway/Stairs", "Kitchen Counter/Tables/Applicances", "Kitchen Sink/Dishes/Dishrack"]
-help_msg = "".join((("`" + prefix + "help {<command>}` - show this message or information about a specific command\n"),
-                    ("`" + prefix + "8ball {<message>}` - receive an answer to a decision\n"),
-                    ("`" + prefix + "roll <amount>d<sides>` - roll <amount> of <sides>-sided dice\n"),
-                    ("`" + prefix + "timer <day>:<hr>:<min> {e} {<message>}` - start timer, optional ping all, optional end message (limit one timer)")))
+helps = {
+    "help": "`" + prefix + "help {<command>}` - show this message or information about a specific command",
+    "timer": "`" + prefix + "timer <day>:<hr>:<min> {e} {<message>}` - start timer, optional ping all, optional end message (limit one timer)",
+    "8ball": "`" + prefix + "8ball {<message>}` - receive an answer to a decision",
+    "roll": "`" + prefix + "roll <amount>d<sides>` - roll <amount> of <sides>-sided dice",
+    "anagram": "`" + prefix + "anagram <letters>` - attempt to rearrange <letters> into a new word"
+    }
+help_msg = "\n".join(list(helps.values()))
 
 async def timer_function(message, tim, e, msg):
     global timer_exists
@@ -77,6 +81,26 @@ async def timer_function(message, tim, e, msg):
     await message.channel.send(s + "Time up! " + msg)
     print("timer ending")
     return
+
+async def search_word(word):
+    f = open("words.txt")
+    w = word.lower()
+    ans = []
+    ans_s = ""
+    l = "temp"
+    while (len(l) != 0):
+        w_list = list(w)
+        l = f.readline().strip()
+        l_list = list(l)
+        try:
+            while (len(l_list) > 0):
+                w_list.remove(l_list.pop())
+            if (len(w_list) == 0 and l != w):
+                ans.append(l)
+                ans_s += "`" + l + "` "
+        except:
+            pass
+    return ans, ans_s
     
 @client.event
 async def on_ready():
@@ -90,23 +114,23 @@ async def on_message(message):
     args = message.content.split()
     arg_len = len(args)
     if (message.content[:len(prefix)] == prefix):
-        if (message.content.startswith(prefix + "EXIT")):                                                   # IN-DISCORD SHUTOFF
+        if (message.content.startswith(prefix + "EXIT")):                                                           # IN-DISCORD SHUTOFF
             print("\n----- Bot shutoff called from discord -----\n")
             await client.logout()
             return
-        if (message.content.startswith(prefix + "IDEAS")):                                                  # MESSAGE THE IDEA LIST
-            await message.channel.send("snow??, anagram, acronym, translator, more prefixes, nicknames, specific help, dice")
+        if (message.content.startswith(prefix + "IDEAS")):                                                          # MESSAGE THE IDEA LIST
+            await message.channel.send("snow??, acronym, translator, more timer, wild chars for anagram, more anagram words")
             return
-        if (message.content.startswith(prefix + "help")):                                                   # SHOW HELP MESSAGE
+        if (message.content.startswith(prefix + "help")):                                                           # SHOW HELP MESSAGE
+            if (arg_len == 2):
+                try:
+                    await message.channel.send(helps[args[1]])
+                    return
+                except:
+                    pass
             await message.channel.send(help_msg)
             return
-        if (message.content.startswith(prefix + "anagram")):                                                # ANAGRAM FINDER? NOT CREATED
-            if (arg_len < 2):
-                await message.channel.send("Usage: `" + prefix + "anagram <letters>`")
-            else:
-                await message.channel.send(args[1])
-            return
-        if (message.content.startswith(prefix + "timer")):                                                  # TIMER AND REMINDER
+        if (message.content.startswith(prefix + "timer")):                                                          # TIMER AND REMINDER
             if (arg_len < 2):
                 await message.channel.send("Usage: `" + prefix + "timer <day>:<hr>:<min> {e} {<message>}`")
             elif (arg_len >= 2):
@@ -133,10 +157,10 @@ async def on_message(message):
                 except:
                     print("timer exception")
             return
-        if (message.content.startswith(prefix + "8ball")):                                                  # MAGIC 8 BALL
+        if (message.content.startswith(prefix + "8ball")):                                                          # MAGIC 8 BALL
             await message.channel.send("The Magic 8-Ball says... " + ball[random.randint(0, 7)])
             return
-        if (message.content.startswith(prefix + "dice") or message.content.startswith(prefix + "roll")):    # DICE ROLL
+        if (message.content.startswith(prefix + "roll") or message.content.startswith(prefix + "dice")):            # DICE ROLL
             if (arg_len < 2):
                 await message.channel.send("Usage: `" + prefix + "roll <amount>d<sides>`")
             elif (arg_len >= 2):
@@ -152,6 +176,16 @@ async def on_message(message):
                     await message.channel.send(msg)
                 except:
                     await message.channel.send("Usage: `" + prefix + "roll <amount>d<sides>`")                
+            return
+        if (message.content.startswith(prefix + "anagram") or message.content.startswith(prefix + "unscramble")):    # ANAGRAM/UNSCRAMBER
+            if (arg_len < 2):
+                await message.channel.send("Usage: `" + prefix + "anagram <letters>`")
+            elif (arg_len >= 2):
+                word = "".join(args[1:]).replace(" ","")
+                ans, s = await search_word(word)
+                if (len(s) == 0):
+                    s = "none"
+                await message.channel.send("Results: " + s)
             return
         await message.channel.send("Unknown command. Type `" + prefix + "help` for command list.")
 
