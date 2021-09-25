@@ -41,15 +41,19 @@ timer_exists = False
 
 client = discord.Client()
 prefix = "&"
-ball = ["Yes", "No", "Definitely", "Definitely NOT", "Probably", "Probably Not", "Maybe", "Doesn't Matter"]
-names = ["Gavin", "Josh", "Rachel", "Simone", "Brianna", "Luke", "Connor"]
-chore_list = ["Basement Bathroom", "Main Bathroom", "Upper Bathroom", "Sweep/Mop Kitchen", "Sweep/Mop Hallway/Stairs", "Kitchen Counter/Tables/Applicances", "Kitchen Sink/Dishes/Dishrack"]
+ball = ("Yes", "No", "Definitely", "Definitely NOT", "Probably", "Probably Not", "Maybe", "Doesn't Matter")
+time_msg = (4, 20, "nice")
+time_msg_channels = []
+time_msg_running = False
+names = ("Gavin", "Josh", "Rachel", "Simone", "Brianna", "Luke", "Connor")
+chore_list = ("Basement Bathroom", "Main Bathroom", "Upper Bathroom", "Sweep/Mop Kitchen", "Sweep/Mop Hallway/Stairs", "Kitchen Counter/Tables/Applicances", "Kitchen Sink/Dishes/Dishrack")
 helps = {
     "help": "`" + prefix + "help {<command>}` - show this message or information about a specific command",
     "timer": "`" + prefix + "timer <day>:<hr>:<min> {e} {<message>}` - start timer, optional ping all, optional end message (limit one timer)",
     "8ball": "`" + prefix + "8ball {<message>}` - receive an answer to a decision",
     "roll": "`" + prefix + "roll <amount>d<sides>` - roll <amount> of <sides>-sided dice",
-    "anagram": "`" + prefix + "anagram <letters>` - attempt to rearrange <letters> into a new word"
+    "anagram": "`" + prefix + "anagram <letters>` - attempt to rearrange <letters> into a new word",
+    "420": "`" + prefix + "420 t|f` - add or remove (respectively) the channel to a list for the bot to message at 4:20"
     }
 help_msg = "\n".join(list(helps.values()))
 
@@ -101,6 +105,24 @@ async def search_word(word):
         except:
             pass
     return ans, ans_s
+
+async def time_message():
+    wait = 1
+    global time_msg_running
+    time_msg_running = True
+    while (len(time_msg_channels) > 0):
+        if (wait <= 0):
+            for chan in time_msg_channels:
+                await chan.send(time_msg[2])
+            await asyncio.sleep(100)
+        curr = time.strftime("%I %M").split()
+        wait = ((time_msg[0]-int(curr[0])-(time_msg[1]<int(curr[1])))%12)*3600 + ((time_msg[1]-int(curr[1]))%60)*60 - 15
+        print(wait, "until", time_msg[0], time_msg[1])
+        await asyncio.sleep(wait)
+    time_msg_running = False
+    return
+    
+    
     
 @client.event
 async def on_ready():
@@ -187,6 +209,29 @@ async def on_message(message):
                 if (len(s) == 0):
                     s = "none"
                 await message.channel.send("Results: " + s)
+            return
+        if (message.content.startswith(prefix + "420")):                                                            # MESSAGE NICE AT 420
+            if (arg_len != 2):
+                await message.channel.send("Usage: `" + prefix + "420 t|f`")
+            elif (args[1] == "t"):
+                try:
+                    while (True):
+                        time_msg_channels.remove(message.channel)
+                except:
+                    time_msg_channels.append(message.channel)
+                await message.channel.send("Channel added to list.")
+                if (not time_msg_running):
+                    try:
+                        asyncio.run(await time_message())
+                    except:
+                        print("timer exception")
+            elif (args[1] == "f"):
+                try:
+                    while (True):
+                        time_msg_channels.remove(message.channel)
+                except:
+                    pass
+                await message.channel.send("Channel removed from list.")
             return
         await message.channel.send("Unknown command. Type `" + prefix + "help` for command list.")
 
