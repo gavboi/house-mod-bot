@@ -43,7 +43,7 @@ client = discord.Client()
 prefix = "&"
 ball = ("Yes", "No", "Definitely", "Definitely NOT", "Probably", "Probably Not", "Maybe", "Doesn't Matter")
 time_msg = (4, 20, "nice")
-time_msg_channels = []
+time_msg_file = "420channels.txt"
 time_msg_running = False
 names = ("Gavin", "Josh", "Rachel", "Simone", "Brianna", "Luke", "Connor")
 chore_list = ("Basement Bathroom", "Main Bathroom", "Upper Bathroom", "Sweep/Mop Kitchen", "Sweep/Mop Hallway/Stairs", "Kitchen Counter/Tables/Applicances", "Kitchen Sink/Dishes/Dishrack")
@@ -110,15 +110,22 @@ async def time_message():
     wait = 1
     global time_msg_running
     time_msg_running = True
-    while (len(time_msg_channels) > 0):
+    channel_list = [""]
+    while (len(channel_list) > 0):
         if (wait <= 0):
-            for chan in time_msg_channels:
-                await chan.send(time_msg[2])
+            file = open(time_msg_file, "r")
+            channel_list = [int(line.strip("\n")) for line in file.readlines()]
+            file.close()
+            for chan in channel_list:
+                await client.get_channel(chan).send(time_msg[2])
             await asyncio.sleep(100)
         curr = time.strftime("%I %M").split()
         wait = ((time_msg[0]-int(curr[0])-(time_msg[1]<int(curr[1])))%12)*3600 + ((time_msg[1]-int(curr[1]))%60)*60 - 15
         print(wait, "until", time_msg[0], time_msg[1])
         await asyncio.sleep(wait)
+        file = open(time_msg_file, "r")
+        channel_list = [int(line.strip("\n")) for line in file.readlines()]
+        file.close()
     time_msg_running = False
     return
     
@@ -128,6 +135,17 @@ async def time_message():
 async def on_ready():
     print("we have logged in as {0.user}".format(client))
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="over the house"))
+    try:
+        file = open(time_msg_file, "r")
+        channel_list = [int(line.strip("\n")) for line in file.readlines()]
+        file.close()
+        if (len(channel_list) > 0):
+            try:
+                asyncio.run(await time_message())
+            except:
+                print("timemsg exception")
+    except:
+        pass
     return
 
 @client.event
@@ -139,7 +157,7 @@ async def on_message(message):
     if (message.content[:len(prefix)] == prefix):
         if (message.content.startswith(prefix + "EXIT")):                                                           # IN-DISCORD SHUTOFF
             print("\n----- Bot shutoff called from discord -----\n")
-            await client.logout()
+            await client.close()
             return
         if (message.content.startswith(prefix + "IDEAS")):                                                          # MESSAGE THE IDEA LIST
             await message.channel.send("snow??, acronym, translator, more timer, wild chars for anagram, more anagram words")
@@ -214,23 +232,30 @@ async def on_message(message):
             if (arg_len != 2):
                 await message.channel.send("Usage: `" + prefix + "420 t|f`")
             elif (args[1] == "t"):
-                try:
-                    while (True):
-                        time_msg_channels.remove(message.channel)
-                except:
-                    time_msg_channels.append(message.channel)
+                file = open(time_msg_file, "r")
+                channel_list = [int(line.strip("\n")) for line in file.readlines()]
+                file.close()
+                while (message.channel.id in channel_list):
+                    channel_list.remove(message.channel.id)
+                channel_list.append(message.channel.id)
+                file = open(time_msg_file, "w")
+                file.write("\n".join(list(map(str, channel_list))))
+                file.close()
                 await message.channel.send("Channel added to list.")
                 if (not time_msg_running):
                     try:
                         asyncio.run(await time_message())
                     except:
-                        print("timer exception")
+                        print("timemsg exception")
             elif (args[1] == "f"):
-                try:
-                    while (True):
-                        time_msg_channels.remove(message.channel)
-                except:
-                    pass
+                file = open(time_msg_file, "r")
+                channel_list = [int(line.strip("\n")) for line in file.readlines()]
+                file.close()
+                while (message.channel.id in channel_list):
+                    channel_list.remove(message.channel.id)
+                file = open(time_msg_file, "w")
+                file.write("\n".join(list(map(str, channel_list))))
+                file.close()
                 await message.channel.send("Channel removed from list.")
             return
         await message.channel.send("Unknown command. Type `" + prefix + "help` for command list.")
