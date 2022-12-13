@@ -16,7 +16,7 @@ async def search_word(word):
                     ans_s += "`" + l + "` "
             except:
                 pass
-    return ans, ans_splp
+    return ans, ans_s
 
 def placeholder():
 	return "Whoopsies! This hasn't been added yet."
