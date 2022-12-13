@@ -1,4 +1,4 @@
-def search_word(word):
+async def search_word(word):
     with open("words.txt") as f:
         w = word.lower()
         ans = []
@@ -16,7 +16,7 @@ def search_word(word):
                     ans_s += "`" + l + "` "
             except:
                 pass
-    return ans, ans_s
+    return ans, ans_splp
 
 def placeholder():
 	return "Whoopsies! This hasn't been added yet."

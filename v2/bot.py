@@ -112,11 +112,15 @@ async def self(interaction: discord.Interaction, d: int=6, n: int=1):
 @tree.command(name='unscramble',description='Rearrange letters to form words')
 async def self(interaction: discord.Interaction, letters: str):
     log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
-    ans, s = funcs.search_word(letters)
+    ans, s = await funcs.search_word(letters)
     if len(s) == 0:
         s = 'n/a'
     await interaction.response.send_message(f'({letters}) Results: {s}')
-    
+
+@tree.command(name='cam',description='Look through my webcam')
+async def self(interaction: discord.Interaction, length: int):
+    log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
+    await interaction.response.send_message(funcs.placeholder())  
 
 # RUN
 client.run('Nzg5Nzk3MjU2OTIwMzAxNTg5.X93SAw.1JeH6wuj92pyESjbYVYlYFHKC-c')
