@@ -53,6 +53,7 @@ class MyClient(discord.Client):
         intents = discord.Intents.default()
         intents.message_content = True
         super().__init__(intents=intents)
+        self.camera = None
 
     async def on_ready(self):
         await self.wait_until_ready()
@@ -79,6 +80,18 @@ class MyClient(discord.Client):
                 reload(funcs)
             else:
                 await message.channel.send('Only the owner can use this command!')
+        
+        if message.content.startswith('$camera'):
+            if message.author != self.user:
+                await message.channel.send('Setting up camera...')
+                try:
+                    self.camera = funcs.Camera()
+                    await self.change_presence(activity=discord.Activity(name='...', type=discord.ActivityType.watching))
+                except:
+                    await message.channel.send('Camera setup failed!')
+                    
+                
+                
                 
         if message.content.startswith('$stop'):
             if message.author.id == 405902825265299456:
@@ -117,10 +130,13 @@ async def self(interaction: discord.Interaction, letters: str):
         s = 'n/a'
     await interaction.response.send_message(f'({letters}) Results: {s}')
 
-@tree.command(name='cam',description='Look through my webcam')
-async def self(interaction: discord.Interaction, length: int):
+@tree.command(name='cam',description='Use my camera')
+async def self(interaction: discord.Interaction, length: int=0):
     log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
-    await interaction.response.send_message(funcs.placeholder())  
+    if client.camera == None:
+        await interaction.response.send_message('Camera has not been set up yet!', ephemeral=True)
+    else:
+        await interaction.response.send_message(funcs.placeholder())  
 
 # RUN
 client.run('Nzg5Nzk3MjU2OTIwMzAxNTg5.X93SAw.1JeH6wuj92pyESjbYVYlYFHKC-c')

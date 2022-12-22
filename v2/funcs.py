@@ -19,4 +19,15 @@ async def search_word(word):
     return ans, ans_s
 
 def placeholder():
-	return "Whoopsies! This hasn't been added yet."
+    return "Whoopsies! This hasn't been added yet."
+    
+class Camera:
+
+    def __init__(self):
+        pass
+    
+    def take_photo(self):
+        pass
+    
+    def take_video(self, time):
+        pass
