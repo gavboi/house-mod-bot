@@ -78,17 +78,17 @@ class MyClient(discord.Client):
                 await tree.sync()
                 log('Synced commands.')
             else:
-                await message.channel.send(ErrMsg.PERMISSION)
+                await message.channel.send(ErrMsg.PERMISSION.value)
                 
         if message.content.startswith('$reload'):
             if message.author.id == 405902825265299456:
                 await message.channel.send('Reimporting funcs...')
                 reload(funcs)
             else:
-                await message.channel.send(ErrMsg.PERMISSION)
+                await message.channel.send(ErrMsg.PERMISSION.value)
         
         if message.content.startswith('$camera'):
-            if message.author != self.user:
+            if message.author.id == 405902825265299456:
                 await message.channel.send('Setting up camera...')
                 try:
                     self.camera = funcs.Camera()
@@ -96,13 +96,15 @@ class MyClient(discord.Client):
                                     type=discord.ActivityType.watching))
                 except:
                     await message.channel.send('Camera setup failed!')
+            else:
+                await message.channel.send(ErrMsg.PERMISSION.value)
                 
         if message.content.startswith('$stop'):
             if message.author.id == 405902825265299456:
                 await message.channel.send('byeeeee')
                 stop()
             else:
-                await message.channel.send(ErrMsg.PERMISSION)
+                await message.channel.send(ErrMsg.PERMISSION.value)
         # if message.author == client.user: return
         
 client = MyClient()
