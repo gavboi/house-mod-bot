@@ -86,12 +86,10 @@ class MyClient(discord.Client):
                 await message.channel.send('Setting up camera...')
                 try:
                     self.camera = funcs.Camera()
-                    await self.change_presence(activity=discord.Activity(name='...', type=discord.ActivityType.watching))
+                    await self.change_presence(activity=discord.Activity(name='...', \
+                                    type=discord.ActivityType.watching))
                 except:
                     await message.channel.send('Camera setup failed!')
-                    
-                
-                
                 
         if message.content.startswith('$stop'):
             if message.author.id == 405902825265299456:
@@ -100,7 +98,7 @@ class MyClient(discord.Client):
             else:
                 await message.channel.send('Only the owner can use this command!')
         # if message.author == client.user: return
-
+        
 client = MyClient()
 tree = app_commands.CommandTree(client)
 
@@ -108,7 +106,8 @@ tree = app_commands.CommandTree(client)
 @tree.command(name='test', description='Testing')
 async def self(interaction: discord.Interaction, arg: str):
     log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
-    await interaction.response.send_message(f'Did you give me this "{arg}"?')
+    embed = default_embed(author=interaction.user)
+    await interaction.response.send_message(embed=embed)
     
 @tree.command(name='roll', description='Roll a d-sided die n times')
 async def self(interaction: discord.Interaction, d: int=6, n: int=1):
@@ -122,7 +121,7 @@ async def self(interaction: discord.Interaction, d: int=6, n: int=1):
         msg += '\nTotal: `' + str(sum(rolls)) + '`'
     await interaction.response.send_message(msg)
 
-@tree.command(name='unscramble',description='Rearrange letters to form words')
+@tree.command(name='unscramble', description='Rearrange letters to form words')
 async def self(interaction: discord.Interaction, letters: str):
     log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
     ans, s = await funcs.search_word(letters)
@@ -133,10 +132,40 @@ async def self(interaction: discord.Interaction, letters: str):
 @tree.command(name='cam',description='Use my camera')
 async def self(interaction: discord.Interaction, length: int=0):
     log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
-    if client.camera == None:
+    if not client.camera:
         await interaction.response.send_message('Camera has not been set up yet!', ephemeral=True)
     else:
-        await interaction.response.send_message(funcs.placeholder())  
+        await interaction.response.send_message(funcs.placeholder(), ephemeral=True)  
+
+@tree.command(name='here', description='Mark someone present at the house')
+async def self(interaction: discord.Interaction, user: discord.User=None):
+    log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
+    if interaction.guild.id != 784564557677854733:
+        await interaction.response.send_message('You can\'t use that here!', \
+                                                ephemeral=True)
+    elif not user.guild_permissions.administrator and user != None:
+        await interaction.response.send_message('Only admins can change others\' attendance!', \
+                                                ephemeral=True)
+    else:
+        if not user:
+            user = interaction.user
+        user.add_roles(discord.utils.get(interaction.guild.roles, name='Present'))
+        await interaction.response.send_message(f'{user} now marked as here.', \
+                                                ephemeral=True)
+
+@tree.command(name='nothere', description='Mark someone absent from the house')
+async def self(interaction: discord.Interaction, user: discord.User=None):
+    log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
+    await interaction.response.send_message(funcs.placeholder(), ephemeral=True) 
+
+# BOT HELPERS
+def default_embed(title='Alert', author=client.user):
+    embed = discord.Embed(
+        title=title,
+        color=discord.Color.blue()
+    )
+    embed.set_author(name=author.display_name, icon_url=author.display_avatar.url)
+    return embed
 
 # RUN
 client.run('Nzg5Nzk3MjU2OTIwMzAxNTg5.X93SAw.1JeH6wuj92pyESjbYVYlYFHKC-c')
