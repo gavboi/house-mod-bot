@@ -112,14 +112,24 @@ async def self(interaction: discord.Interaction, arg: str):
 @tree.command(name='roll', description='Roll a d-sided die n times')
 async def self(interaction: discord.Interaction, d: int=6, n: int=1):
     log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
+    if n < 1:
+        n = 1
+    if d < 1:
+        d = 1
+    embed = default_embed(title=f'Rolling {n}d{d}', author=interaction.user)
     rolls = []
-    msg = f'({n}d{d}) Your rolls: '
+    msg = ''
     for _ in range(n):
         rolls.append(random.randint(1, d))
         msg += '`' + str(rolls[-1]) + '` '
-    if n > 1:
-        msg += '\nTotal: `' + str(sum(rolls)) + '`'
-    await interaction.response.send_message(msg)
+    if len(msg) < 1024:
+        embed.add_field(name='Your Rolls:', value=msg, inline=True)
+        if n > 1:
+            msg = '`' + str(sum(rolls)) + '`'
+            embed.add_field(name='Total:', value=msg, inline=True)
+        await interaction.response.send_message(embed=embed)
+    else:
+        await interaction.response.send_message('Too many rolls!', ephemeral=True)
 
 @tree.command(name='unscramble', description='Rearrange letters to form words')
 async def self(interaction: discord.Interaction, letters: str):
