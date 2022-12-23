@@ -17,9 +17,6 @@ async def search_word(word):
             except:
                 pass
     return ans, ans_s
-
-def placeholder():
-    return "Whoopsies! This hasn't been added yet."
     
 class Camera:
 
