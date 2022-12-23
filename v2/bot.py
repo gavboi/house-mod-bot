@@ -156,20 +156,32 @@ async def self(interaction: discord.Interaction, length: int=0):
 @tree.command(name='here', description='Mark someone present at the house')
 async def self(interaction: discord.Interaction, user: discord.User=None):
     log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
+    if not user:
+        user = interaction.user
     if not interaction.guild or interaction.guild.id != 784564557677854733:
         await send_alert(interaction, ErrMsg.GUILD)
-    elif not user.guild_permissions.administrator and user != None:
+    elif not interaction.user.guild_permissions.administrator and user != None:
         await send_alert(interaction, ErrMsg.PERMISSION)
+    elif discord.utils.get(interaction.guild.roles, name='Crewmate') not in user.roles:
+        await send_alert(interaction, f'{user} is not a resident!')
     else:
-        if not user:
-            user = interaction.user
-        user.add_roles(discord.utils.get(interaction.guild.roles, name='Present'))
+        await user.add_roles(discord.utils.get(interaction.guild.roles, name='Present'))
         await send_alert(interaction, f'{user} now marked as here.')
 
 @tree.command(name='nothere', description='Mark someone absent from the house')
 async def self(interaction: discord.Interaction, user: discord.User=None):
     log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
-    await send_alert(interaction, ErrMsg.MISSING)
+    if not user:
+        user = interaction.user
+    if not interaction.guild or interaction.guild.id != 784564557677854733:
+        await send_alert(interaction, ErrMsg.GUILD)
+    elif not interaction.user.guild_permissions.administrator and user != None:
+        await send_alert(interaction, ErrMsg.PERMISSION)
+    elif discord.utils.get(interaction.guild.roles, name='Crewmate') not in user.roles:
+        await send_alert(interaction, f'{user} is not a resident!')
+    else:
+        await user.remove_roles(discord.utils.get(interaction.guild.roles, name='Present'))
+        await send_alert(interaction, f'{user} now marked as not here.')
 
 # BOT HELPERS
 def default_embed(title='Alert', author=None):
