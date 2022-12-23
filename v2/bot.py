@@ -150,7 +150,7 @@ async def self(interaction: discord.Interaction, length: int=0):
 @tree.command(name='here', description='Mark someone present at the house')
 async def self(interaction: discord.Interaction, user: discord.User=None):
     log(f'({interaction.guild}) {interaction.user}: {interaction.data}')
-    if interaction.guild.id != 784564557677854733:
+    if not interaction.guild or interaction.guild.id != 784564557677854733:
         await interaction.response.send_message('You can\'t use that here!', \
                                                 ephemeral=True)
     elif not user.guild_permissions.administrator and user != None:
