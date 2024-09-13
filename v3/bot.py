@@ -1,26 +1,25 @@
 import time
-import typing
 
 import discord
 from discord.ext import commands
 from discord import app_commands
 
-bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())  # intents?
+GUILD_IDS = [
+    784564557677854733,  # DA HAUS
+]
+
+intents = discord.Intents.default()
+intents.messages = True
+bot = commands.Bot(
+    command_prefix='!',
+    intents=intents
+)
 
 
 async def incomplete_response(interaction: discord.Interaction):
-    await interaction.response.send_message('Not implemented')
+    await interaction.response.send_message('Not implemented', ephemeral=True)
 
-
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user}')
-
-
-def shutdown_tasks():
-    print("Stopping...")
-    time.sleep(1)
-    print("Done")
+# //////////////////////////////////////////////////
 
 
 @bot.tree.command(name='backup', description='Complete a task')
@@ -32,22 +31,51 @@ async def backup(
     await incomplete_response(interaction)
     # await interaction.response.send_message(f'Task completed! Date: {date or "No date specified"}')
 
+# //////////////////////////////////////////////////
+house = app_commands.Group(name='house', description='Manage households')
 
-@bot.tree.command(name='house', description='create household in channel')
-@app_commands.describe(sub="Subcommand", name='Name of household', channel='Channel for messages')
+
+@house.command(name='create', description='create household in channel')
+@app_commands.describe(name='Name of household', channel='Channel for messages')
 async def house_create(
         interaction: discord.Interaction,
-        sub: typing.Literal['create', 'remove'],
         name: str,
         channel: discord.TextChannel = None
 ):
     await incomplete_response(interaction)
     # await interaction.response.send_message(f'Household "{name}" created')
 
-try:
-    bot.run('Nzg5Nzk3MjU2OTIwMzAxNTg5.X93SAw.1JeH6wuj92pyESjbYVYlYFHKC-c')
-finally:
-    shutdown_tasks()
+bot.tree.add_command(house)
+# //////////////////////////////////////////////////
+
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user}')
+    print(f'Found {len(bot.tree.get_commands())} command(s)')
+    for GUILD_ID in GUILD_IDS:
+        if not bot.get_guild(GUILD_ID):
+            print(f'Guild {GUILD_ID} not found')
+            await bot.close()
+        try:
+            synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
+            print(f'Synced {len(synced)} command(s) in {GUILD_ID}')
+        except Exception as e:
+            print(f'Failed to sync commands in {GUILD_ID}: {e}')
+            await bot.close()
+
+
+def shutdown_tasks():
+    print('Stopping...')
+    time.sleep(1)
+    print('Done')
+
+
+if __name__ == '__main__':
+    try:
+        bot.run('Nzg5Nzk3MjU2OTIwMzAxNTg5.X93SAw.1JeH6wuj92pyESjbYVYlYFHKC-c')
+    finally:
+        shutdown_tasks()
 
 
 #
