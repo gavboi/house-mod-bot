@@ -16,7 +16,7 @@ All commands using optional `house_name` will use the house assigned to the curr
 - `/user list [house_name]`: view current users in household
 
 
-- `/chores set [house_name] <chore_names...>`: set chores list for a household
+- `/chores set <chore_names...> [house_name]`: set chores list for a household
 - `/chores list [house_name]`: view current chores list for a household
 
 
