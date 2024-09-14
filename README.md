@@ -13,11 +13,9 @@ All commands using optional `house_name` will use the house assigned to the curr
 
 - `/user add <user> [house_name]`: add user to household 
 - `/user remove <user> [house_name]`: removes user from house residents list
-- `/user list [house_name]`: view current users in household
 
 
 - `/chores set <chore_names...> [house_name]`: set chores list for a household
-- `/chores list [house_name]`: view current chores list for a household
 
 
 - `/schedule next [house_name]`: proceed to next iteration of schedule 
@@ -29,6 +27,8 @@ All commands using optional `house_name` will use the house assigned to the curr
 - `/backup`: make local file save of information
 
 
-### Usage
+### Usage (All Users)
 
+- `/user list [house_name]`: view current users in household
+- `/chores list [house_name]`: view current chores list for a household
 - `/complete [date] [house_name]`: mark your chore as completed for current iteration; provide date as `MM-DD` to mark that a chore was done on a previous day
