@@ -50,7 +50,7 @@ class Household:
         if len(self._chore_board_list) == 0:  # make sure there is at least one
             return None
         chore_board = self._chore_board_list[-1]  # get most recent board
-        if datetime.datetime.now() < chore_board.end_date:  # make sure it's still active
+        if datetime.datetime.now() > chore_board.end_date:  # make sure it's still active
             return None
         else:
             return chore_board
