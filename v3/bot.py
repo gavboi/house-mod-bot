@@ -9,6 +9,7 @@ from discord import app_commands
 SYNC_COMMANDS = False
 GUILD_IDS = [
     784564557677854733,  # DA HAUS
+    None  # global
 ]
 
 intents = discord.Intents.default()
