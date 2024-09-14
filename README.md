@@ -23,7 +23,7 @@ All commands using optional `house_name` will use the house assigned to the curr
 - `/schedule next [house_name]`: proceed to next iteration of schedule 
 - `/schedule skip <number> [house_name]`: skip ahead `number` of chore assignment iterations
 - `/schedule auto <weekday> [house_name]`: set the `schedule next` command to automatically run on the given `weekday` at EOD
-- `/schedule auto stop [house_name]`: disable automatic chore trigger
+- `/schedule stop [house_name]`: disable automatic chore trigger
 
 
 - `/backup`: make local file save of information
