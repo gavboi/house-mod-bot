@@ -73,14 +73,14 @@ class Household:
     def get_offset(self) -> int:
         return self._offset
 
-    def complete(self, user: discord.User, date: datetime.datetime) -> bool:
+    def complete(self, user: discord.User, date: datetime.datetime) -> typing.Optional[ChoreBoard]:
         chore_board = self.get_active_chore_board()  # check for active board
         if not chore_board:
-            return False
+            return None
         for assignment in chore_board.unfinished_assignments:  # check for user in unfinished assignments
             if assignment.user == user:
                 assignment.date_complete = date  # mark and sort assignment as complete
                 chore_board.unfinished_assignments.remove(assignment)
                 chore_board.finished_assignments.append(assignment)
-                return True
-        return False
+                return chore_board
+        return None
