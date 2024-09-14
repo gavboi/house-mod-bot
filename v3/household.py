@@ -29,7 +29,7 @@ class Household:
     def get_chores(self) -> list:
         return self._chores
 
-    def get_active_chore(self) -> typing.Union[dict, None]:
+    def get_active_chore(self) -> typing.Optional[dict]:
         if len(self._chore_list) == 0:
             return None
         chore_set = self._chore_list[-1]
