@@ -8,7 +8,7 @@ class Household:
 
     def __init__(self, name: str, channel: discord.TextChannel):
         self.name = name
-        self.channel_id = channel
+        self.channel = channel
         self._chores = []
         self._users = set()
         self._offset = 0
