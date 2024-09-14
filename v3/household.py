@@ -38,7 +38,7 @@ class Household:
         else:
             return chore_set
 
-    def new_chore_set(self, end_date: datetime.datetime.date = None) -> dict:
+    def new_chore_set(self, end_date: datetime.datetime = None) -> dict:
         assignments = []
         for index, user in enumerate(self.get_users()):
             assignments.append({
