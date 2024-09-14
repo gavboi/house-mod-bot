@@ -4,6 +4,22 @@ import typing
 import datetime
 
 
+class Assignment:
+    def __init__(self, user: discord.User, chore: str):
+        self.user = user
+        self.chore = chore
+        self.date_complete = None
+
+
+class ChoreBoard:
+    def __init__(self, unfinished_assignments: typing.List[Assignment], end_date: datetime.datetime):
+        self.message_id = None
+        self.unfinished_assignments = unfinished_assignments
+        self.finished_assignments = []
+        self.start_date = datetime.datetime.now()
+        self.end_date = end_date
+
+
 class Household:
 
     def __init__(self, name: str, channel: discord.TextChannel):
@@ -12,7 +28,7 @@ class Household:
         self._chores = []
         self._users = set()
         self._offset = 0
-        self._chore_list = []
+        self._chore_board_list = []
 
     def add_user(self, user: discord.User) -> None:
         self._users.add(user)
@@ -29,33 +45,26 @@ class Household:
     def get_chores(self) -> list:
         return self._chores
 
-    def get_active_chore(self) -> typing.Optional[dict]:
-        if len(self._chore_list) == 0:
+    def get_active_chore_board(self) -> typing.Optional[ChoreBoard]:
+        if len(self._chore_board_list) == 0:  # make sure there is at least one
             return None
-        chore_set = self._chore_list[-1]
-        if datetime.datetime.now().date() < chore_set['end_date']:
+        chore_board = self._chore_board_list[-1]  # get most recent board
+        if datetime.datetime.now() < chore_board.end_date:  # make sure it's still active
             return None
         else:
-            return chore_set
+            return chore_board
 
-    def new_chore_set(self, end_date: datetime.datetime = None) -> dict:
+    def new_chore_board(self, end_date: datetime.datetime = None) -> ChoreBoard:
         assignments = []
-        for index, user in enumerate(self.get_users()):
-            assignments.append({
-                'user': user,
-                'chore': self.get_chores()[(self.get_offset() + index) % len(self.get_chores())],
-                'date-complete': None
-            })
-        self.advance_offset()
-        chore_set = {
-            'chore_message_id': None,
-            'unfinished': assignments,
-            'finished': [],
-            'start_date': datetime.datetime.now().date(),
-            'end_date': end_date
-        }
-        self._chore_list.append(chore_set)
-        return chore_set
+        for index, user in enumerate(self.get_users()):  # for every user, assign chore for list at offset
+            assignments.append(Assignment(
+                user,
+                self.get_chores()[(self.get_offset() + index) % len(self.get_chores())]
+            ))
+        self.advance_offset()  # move offset for next assignment
+        chore_board = ChoreBoard(assignments, end_date)  # create and return board
+        self._chore_board_list.append(chore_board)
+        return chore_board
 
     def advance_offset(self, n: int = 1) -> None:
         self._offset = (self.get_offset() + n) % len(self.get_chores())
@@ -64,11 +73,13 @@ class Household:
         return self._offset
 
     def complete(self, user: discord.User, date: datetime.datetime) -> bool:
-        chore_set = self.get_active_chore()
-        if not chore_set:
+        chore_board = self.get_active_chore_board()  # check for active board
+        if not chore_board:
             return False
-        for unfinished_chore in chore_set['unfinished']:
-            if unfinished_chore['user'] == user:
-                unfinished_chore['date-complete'] = date
+        for assignment in chore_board.unfinished_assignments:  # check for user in unfinished assignments
+            if assignment.user == user:
+                assignment.date_complete = date  # mark and sort assignment as complete
+                chore_board.unfinished_assignments.remove(assignment)
+                chore_board.finished_assignments.append(assignment)
                 return True
         return False
