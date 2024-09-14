@@ -63,7 +63,12 @@ class Household:
     def get_offset(self) -> int:
         return self._offset
 
-    def complete(self, user: discord.User, date) -> bool:
+    def complete(self, user: discord.User, date: datetime.datetime) -> bool:
         chore_set = self.get_active_chore()
         if not chore_set:
             return False
+        for unfinished_chore in chore_set['unfinished']:
+            if unfinished_chore['user'] == user:
+                unfinished_chore['date-complete'] = date
+                return True
+        return False
