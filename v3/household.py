@@ -29,6 +29,7 @@ class Household:
         self._users = set()
         self._offset = 0
         self._chore_board_list = []
+        self.auto_renew = None
 
     def add_user(self, user: discord.User) -> None:
         self._users.add(user)
