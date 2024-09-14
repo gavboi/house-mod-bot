@@ -8,12 +8,11 @@ from discord import app_commands
 
 SYNC_COMMANDS = False
 GUILD_IDS = [
-    784564557677854733,  # DA HAUS
-    None  # global
+    784564557677854733
 ]
 
 intents = discord.Intents.default()
-intents.messages = True
+intents.messages = False
 bot = commands.Bot(
     command_prefix='!',
     intents=intents
@@ -172,16 +171,12 @@ async def on_ready():
     print(f'Logged in as {bot.user}')
     print(f'Found {len(bot.tree.get_commands())} command(s)')
     if SYNC_COMMANDS:
-        for GUILD_ID in GUILD_IDS:
-            if not bot.get_guild(GUILD_ID):
-                print(f'Guild {GUILD_ID} not found')
-                await bot.close()
-            try:
-                synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
-                print(f'Synced {len(synced)} command(s) in {GUILD_ID}')
-            except Exception as e:
-                print(f'Failed to sync commands in {GUILD_ID}: {e}')
-                await bot.close()
+        try:
+            synced = await bot.tree.sync()
+            print(f'Synced {len(synced)} command(s) globally')
+        except Exception as e:
+            print(f'Failed to sync commands globally: {e}')
+            await bot.close()
 
 
 def shutdown_tasks():
