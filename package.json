@@ -1,5 +1,13 @@
 {
+  "name": "der-hausroboter",
+  "version": "4.0.0",
+  "main": "src/server.js",
   "devDependencies": {
+    "ngrok": "^5.0.0-beta.2",
     "wrangler": "^3.78.2"
+  },
+  "dependencies": {
+    "discord-interactions": "^4.1.0",
+    "itty-router": "^5.0.18"
   }
 }
