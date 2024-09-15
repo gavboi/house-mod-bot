@@ -1,37 +1,48 @@
 import { HOUSE_GROUP_COMMAND } from './commands.js';
+import dotenv from 'dotenv';
+import process from 'node:process';
 
 /**
  * run from command line on command definition changes
  */
 
- const token = process.env.DISCORD_TOKEN;
- const applicationId = process.env.DISCORD_APPLICATION_ID;
+dotenv.config({ path: '.dev.vars' });
 
- if (!token) {
-   throw new Error('The DISCORD_TOKEN environment variable is required.');
- }
- if (!applicationId) {
-   throw new Error('The DISCORD_APPLICATION_ID environment variable is required.');
- }
+const token = process.env.DISCORD_TOKEN;
+const applicationId = process.env.DISCORD_APPLICATION_ID;
 
- async function registerCommands(url) {
-   const response = await fetch(url, {
-     headers: {
-       'Content-Type': 'application/json',
-       Authorization: `Bot ${token}`,
-     },
-     method: 'PUT',
-     body: JSON.stringify([HOUSE_GROUP_COMMAND]),
-   });
+if (!token) {
+  throw new Error('The DISCORD_TOKEN environment variable is required.');
+}
+if (!applicationId) {
+  throw new Error('The DISCORD_APPLICATION_ID environment variable is required.');
+}
 
-   if (response.ok) {
-     console.log('Registered all commands');
-   } else {
-     console.error('Error registering commands');
-     const text = await response.text();
-     console.error(text);
-   }
-   return response;
- }
+const url = `https://discord.com/api/v10/applications/${applicationId}/commands`;
 
- await registerGlobalCommands();
+const response = await fetch(url, {
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bot ${token}`,
+  },
+  method: 'PUT',
+  body: JSON.stringify([HOUSE_GROUP_COMMAND]),
+});
+
+if (response.ok) {
+  console.log('Registered all commands');
+  const data = await response.json();
+  console.log(JSON.stringify(data, null, 2));
+} else {
+  console.error('Error registering commands');
+  let errorText = `Error registering commands \n ${response.url}: ${response.status} ${response.statusText}`;
+  try {
+    const error = await response.text();
+    if (error) {
+      errorText = `${errorText} \n\n ${error}`;
+    }
+  } catch (err) {
+    console.error('Error reading body from request:', err);
+  }
+  console.error(errorText);
+}

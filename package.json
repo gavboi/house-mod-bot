@@ -10,6 +10,7 @@
     "publish": "wrangler deploy"
   },
   "devDependencies": {
+    "dotenv": "^16.4.5",
     "ngrok": "^5.0.0-beta.2",
     "wrangler": "^3.78.2"
   },

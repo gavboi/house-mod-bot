@@ -1,5 +1,6 @@
 workspace.xml
 .idea/
+.dev.vars
 *.log
 __pycache__/
 node_modules/
