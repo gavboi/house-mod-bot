@@ -24,7 +24,6 @@ class JsonResponse extends Response {
 }
 
 const router = AutoRouter();
-let households = [];
 
 function hasAdminPermissions(member) {
   return member.permissions & (1 << 3); // ADMINISTRATOR permission bitfield is 1 << 3
@@ -87,7 +86,16 @@ router.post('/', async (request, env) => {
     const subCommand = interaction.data.options && interaction.data.options[0] && interaction.data.options[0].name.toLowerCase();
     const options = interaction.data.options;
     const channel = interaction.channel;
-    console.log(`Command: ${commandName} ${subCommand} --- Channel: ${channel.name}, ${channel.id} --- Households: ${households.length}`);
+    const household_json = await env.HOUSEHOLDS_KV.get(channel.id);
+    const household_keys = (await env.HOUSEHOLDS_KV.list()).keys;
+    let household = null;
+    if (household_json) {
+      household = Object.assign(new Household, JSON.parse(household_json));
+      console.log(JSON.stringify(household));
+    } else {
+      console.log("No household found");
+    }
+    console.log(`Command: ${commandName} ${subCommand} --- Channel: ${channel.name}, ${channel.id} --- Households: ${household_keys.length}`);
 
     console.log('Options:', options);
     let msg = '';
@@ -104,15 +112,12 @@ router.post('/', async (request, env) => {
                 return getNoAdminWarning();
               }
               const name = options[0].options[0].value;
-              if (!households.find(hh => hh.name.toLowerCase() === name.toLowerCase())) { // no duplicate names
-                const household = households.find(hh => hh.channel.id === channel.id); // no duplicate channels
-                if (!household) {
-                  const newHousehold = new Household(name, channel);
-                  console.log(JSON.stringify(newHousehold));
-                  households.push(newHousehold);
-                  msg = `Household "${name}" created`;
-                } else { msg = `Household "${household.name}" already uses this channel`; }
-              } else { msg = `Household "${name}" already exists`; }
+              if (!household) {
+                const newHousehold = new Household(name, channel);
+                console.log(JSON.stringify(newHousehold));
+                await env.HOUSEHOLDS_KV.put(channel.id, JSON.stringify(newHousehold));
+                msg = `Household "${name}" created`;
+              } else { msg = `Household "${household.name}" already uses this channel`; }
               console.log(msg);
               return new JsonResponse({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -128,9 +133,14 @@ router.post('/', async (request, env) => {
             
           case 'list':
             try {
-              msg = `Households (${households.length}):\n`;
-              for (let household of households) {
-                msg = msg + `"${household.name}" in "${channel.name}" (${household.users.length} users)\n`;
+              msg = `Households (${household_keys.length}):\n`;
+              let hh = null;
+              let hh_json = null;
+              for (let household_key of household_keys) {
+                hh_json = await env.HOUSEHOLDS_KV.get(household_key.name);
+                console.log(`${household_key.name} ${hh_json}`);
+                hh = Object.assign(new Household, JSON.parse(hh_json));
+                msg = msg + `"${hh.name}" in "${hh.channel.name}" (${hh.users.length} users)\n`;
               }
               console.log(msg);
               return new JsonResponse({
@@ -150,9 +160,8 @@ router.post('/', async (request, env) => {
               if (!hasAdminPermissions(interaction.member)) {
                 return getNoAdminWarning();
               }
-              const household = households.find(hh => hh.channel.id === channel.id);
               if (household) {
-                households = households.filter(hh => hh.channel.id !== channel.id);
+                await env.HOUSEHOLDS_KV.delete(channel.id);
                 msg = `Household "${household.name}" deleted`;
               } else {
                 msg = 'No household found in this channel';
@@ -194,10 +203,10 @@ router.post('/', async (request, env) => {
                   },
                 });
               }
-              const household = households.find(hh => hh.channel.id === channel.id);
               if (household) {
                 if (!household.getUserById(userId)) {
                   household.addUser(user);
+                  await env.HOUSEHOLDS_KV.put(channel.id, JSON.stringify(household));
                   msg = `User "${user.global_name}" added to household "${household.name}"`;
                 } else {
                   msg = `User "${user.global_name}" already in household "${household.name}"`;
@@ -220,11 +229,10 @@ router.post('/', async (request, env) => {
 
           case 'list':
             try {
-              const household = households.find(hh => hh.channel.id === channel.id);
               if (household) {
                 msg = `Users in "${household.name}" (${household.users.length}):\n`;
                 for (let user of household.users) {
-                  msg = msg + `${user.displayName} (${user.username})\n`;
+                  msg = msg + `<@${user.id}> (${user.global_name})\n`;
                 }
               } else {
                 msg = 'No household found in this channel';
@@ -248,11 +256,11 @@ router.post('/', async (request, env) => {
                 return getNoAdminWarning();
               }
               const userId = options[0].options[0].value;
-              const household = households.find(hh => hh.channel.id === channel.id);
               if (household) {
                 const user = household.getUserById(userId);
                 if (user) {
                   household.removeUser(user);
+                  await env.HOUSEHOLDS_KV.put(channel.id, JSON.stringify(household));
                   msg = `User "${user.global_name}" removed from household "${household.name}"`;
                 } else {
                   msg = `User id "${userId}" not in household "${household.name}"`;

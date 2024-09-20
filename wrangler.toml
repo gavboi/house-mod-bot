@@ -1,3 +1,6 @@
 name = "der-hausroboter"
 main = "./src/server.js"
 compatibility_date = "2024-09-14"
+[[kv_namespaces]]
+binding = "HOUSEHOLDS_KV"
+id = "169337bd796a4f099e19a7870aaeae44"
