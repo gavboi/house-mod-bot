@@ -28,6 +28,44 @@ export const HOUSE_GROUP_COMMAND = {
   ],
 };
 
+export const USER_GROUP_COMMAND = {
+  name: 'user',
+  description: 'Manage users',
+  options: [
+    {
+      type: 1,
+      name: 'add',
+      description: 'Add user to household in current channel',
+      options: [
+        {
+          type: 6,
+          name: 'user',
+          description: 'User to add',
+          required: true,
+        },
+      ],
+    },
+    {
+      type: 1,
+      name: 'list',
+      description: 'List all users in household in current channel',
+    },
+    {
+      type: 1,
+      name: 'remove',
+      description: 'Remove user from household in current channel',
+      options: [
+        {
+          type: 6,
+          name: 'user',
+          description: 'User to remove',
+          required: true,
+        },
+      ],
+    },
+  ],
+};
+
 //1: SUB_COMMAND
 //2: SUB_COMMAND_GROUP
 //3: STRING

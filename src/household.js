@@ -18,6 +18,10 @@ class Household {
     }
   }
 
+  getUserById(userId) {
+    return this.users.find(u => u.id === userId);
+  }
+
   removeUser(user) {
     this.users = this.users.filter(item => item !== user);
   }
