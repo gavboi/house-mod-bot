@@ -8,6 +8,7 @@ import {
 import {
   HOUSE_GROUP_COMMAND,
   USER_GROUP_COMMAND,
+  CHORES_GROUP_COMMAND,
 } from './commands.js';
 import Household from './household';
 
@@ -273,6 +274,61 @@ router.post('/', async (request, env) => {
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
                   content: msg,
+                  flags: InteractionResponseFlags.EPHEMERAL,
+                },
+              });
+            } catch (error) {
+              console.error(error);
+            }
+            break;
+
+          default:
+            return new JsonResponse({ error: `Unknown ${commandName} subcommand` }, { status: 400 });
+        }
+        break;
+
+      case CHORES_GROUP_COMMAND.name.toLowerCase():
+        switch (subCommand) {
+
+          case 'set':
+            try {
+              if (!hasAdminPermissions(interaction.member)) {
+                return getNoAdminWarning();
+              }
+              const choreString = options[0].options[0].value;
+              if (household) {
+                household.setChores(choreString.split(',').map(chore => chore.trim()));
+                await env.HOUSEHOLDS_KV.put(channel.id, JSON.stringify(household));
+                msg = `Chore list updated in household "${household.name}"`;
+              } else {
+                msg = 'No household found in this channel';
+              }
+              console.log(msg);
+              return new JsonResponse({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                  content: msg,
+                  flags: InteractionResponseFlags.EPHEMERAL,
+                },
+              });
+            } catch (error) {
+              console.error(error);
+            }
+            break;
+
+          case 'list':
+            try {
+              if (household) {
+                msg = `Chores in "${household.name}" (${household.chores.length}):\n`;
+                msg = msg + household.chores.join(', ');
+              } else {
+                msg = 'No household found in this channel';
+              }
+              console.log(msg);
+              return new JsonResponse({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                  content: msg.trim(),
                   flags: InteractionResponseFlags.EPHEMERAL,
                 },
               });

@@ -1,4 +1,4 @@
-import { HOUSE_GROUP_COMMAND, USER_GROUP_COMMAND } from './commands.js';
+import { HOUSE_GROUP_COMMAND, USER_GROUP_COMMAND, CHORES_GROUP_COMMAND } from './commands.js';
 import dotenv from 'dotenv';
 import process from 'node:process';
 
@@ -26,7 +26,7 @@ const response = await fetch(url, {
     Authorization: `Bot ${token}`,
   },
   method: 'PUT',
-  body: JSON.stringify([HOUSE_GROUP_COMMAND, USER_GROUP_COMMAND]),
+  body: JSON.stringify([HOUSE_GROUP_COMMAND, USER_GROUP_COMMAND, CHORES_GROUP_COMMAND]),
 });
 
 if (response.ok) {

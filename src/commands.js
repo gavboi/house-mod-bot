@@ -66,6 +66,31 @@ export const USER_GROUP_COMMAND = {
   ],
 };
 
+export const CHORES_GROUP_COMMAND = {
+  name: 'chores',
+  description: 'Manage chores',
+  options: [
+    {
+      type: 1,
+      name: 'set',
+      description: 'Set chores list for household in current channel',
+      options: [
+        {
+          type: 3,
+          name: 'chores',
+          description: 'Comma-separated list of chores',
+          required: true,
+        },
+      ],
+    },
+    {
+      type: 1,
+      name: 'list',
+      description: 'View chores list for household in current channel',
+    },
+  ],
+};
+
 //1: SUB_COMMAND
 //2: SUB_COMMAND_GROUP
 //3: STRING
